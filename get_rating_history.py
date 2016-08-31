@@ -16,7 +16,8 @@ import db_info
 class GetRatingHistory:
 
 
-    def __init__(self, user='root', password='password', verbose=False, table='profs_list_unique'):
+    def __init__(self, user='root', password='password', verbose=False,
+                 table='profs_list_unique'):
         self.table = table
         self.user = user
         self.password = password
@@ -39,7 +40,7 @@ class GetRatingHistory:
 
 
         # Table profs_list in profs DB is list of all professors at
-        # UC with duplicates removed. Select professors from only one campus.
+        # UC with duplicates removed.
         prof_list.execute('USE profs')
         query = "SELECT last_name, first_name FROM " + self.table #+ " WHERE campus='{}'".format(campus)
         prof_list.execute(query)

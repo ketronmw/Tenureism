@@ -74,11 +74,11 @@ print 'Created table ucpay_profs, in profs database, of all *.csv files.'
 
 # Remove duplicates from ucpay_profs and save to new table.
 # GROUP command will remove duplicates.
+cmd = ('CREATE TABLE profs_list_unique AS '+
+       'SELECT last_name, first_name, '+
+       'campus FROM ucpay_profs '+
+       'GROUP BY last_name, first_name, campus;')
 try:
-    cmd = ('CREATE TABLE profs_list_unique AS '+
-                      'SELECT last_name, first_name, '+
-                      'campus FROM ucpay_profs '+
-                      'GROUP BY last_name, first_name, campus;')
     mysql_con.execute(cmd)
 except:
     mysql_con.execute('DROP TABLE profs_list_unique;')
@@ -86,14 +86,14 @@ except:
 
 print 'Created table with all unique rows as profs_list_unique.'
 
+
 # Create table where there are > N occurances of given prof.
-N = [3,4,5,8,10]
-for n in N:
+for n in db_info.N:
+    cmd = ('CREATE TABLE profs_list_over'+str(n)+' AS SELECT last_name, '+
+           'first_name,campus, COUNT(*) AS occurences FROM ucpay_profs '+
+           'GROUP BY last_name, first_name, campus HAVING COUNT(*)>' +
+           str(n)+';')
     try:
-        cmd = ('CREATE TABLE profs_list_over'+str(n)+' AS SELECT last_name, '+
-               'first_name,campus, COUNT(*) AS occurences FROM ucpay_profs '+
-               'GROUP BY last_name, first_name, campus HAVING COUNT(*)>' +
-               str(n)+';')
         mysql_con.execute(cmd)
     except:
         mysql_con.execute('DROP TABLE profs_list_over'+str(n)+';')
@@ -103,12 +103,12 @@ for n in N:
 
 
 # Do the inverse of above -- keep where profs < N occurances.
-for n in N:
+for n in db_info.N:
+    cmd = ('CREATE TABLE profs_list_under'+str(n)+' AS SELECT last_name, '+
+           'first_name,campus, COUNT(*) AS occurences FROM ucpay_profs '+
+           'GROUP BY last_name, first_name, campus HAVING COUNT(*)<' +
+           str(n)+';')
     try:
-        cmd = ('CREATE TABLE profs_list_under'+str(n)+' AS SELECT last_name, '+
-               'first_name,campus, COUNT(*) AS occurences FROM ucpay_profs '+
-               'GROUP BY last_name, first_name, campus HAVING COUNT(*)>' +
-               str(n)+';')
         mysql_con.execute(cmd)
     except:
         mysql_con.execute('DROP TABLE profs_list_under'+str(n)+';')
