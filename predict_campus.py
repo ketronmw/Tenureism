@@ -1,7 +1,8 @@
+import os
+
 import db_info
 
-class GetPublicationHistory:
-
+class PredictCampus:
     def __init__(self, user='root', password='password', verbose=False,
                  table='profs_list_unique'):
         self.table = table
@@ -10,5 +11,4 @@ class GetPublicationHistory:
         self.verbose = verbose
         self.pct_found = None
 
-    def get_history(self):
-        return None
+    return None

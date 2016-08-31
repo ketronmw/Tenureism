@@ -2,19 +2,28 @@ import os
 import pdb
 import re
 
-import numpy as np
-import pandas as pd
 import mechanize
-from bs4 import BeautifulSoup
 import requests
-from lxml import html
+import json
 import mysql.connector as mysql
+from bs4 import BeautifulSoup
+from lxml import html
+
 
 import db_info
 
-
 class GetRatingHistory:
 
+    """ Reads SQL table with a list of unique professor names and
+    scrapes ratemyprofessor.com for each prof.
+
+    Usage:
+    from get_rating_history import GetRatingHistory
+    ratings = GetRatingHistory()
+    ratings.get_history()
+
+    If the rmp table already exists, this does nothing.
+    """
 
     def __init__(self, user='root', password='password', verbose=False,
                  table='profs_list_unique'):
@@ -67,8 +76,10 @@ class GetRatingHistory:
             mid = first_name.strip().split(' ')
             if len(mid) > 1:
                 first_name = mid[0]# + mid[1][0]+'.'
+            name = self.capitalize(first_name.strip()) +' ' + self.capitalize(last_name.strip())
 
-            name = self.capitalize(first_name.strip()) +' ' + self.capitalize(last_name.strip()) 
+            name = 'Manoj Kaplinghat'
+
             rmp_search = 'https://www.ratemyprofessors.com/search.jsp?query='+name.replace(' ','+')
             br = mechanize.Browser()
             br.set_handle_robots(False) # ignore robots
@@ -80,14 +91,16 @@ class GetRatingHistory:
                     #br.follow_link(link)
                     # print link
 
-            if len(mylinks) < 3:  # There is no rating for given prof in this case.
+            if len(mylinks) < 3:
+                # There is no rating for given prof in this case.
                 if self.verbose:
                     print "There doesn't appear to be a rmp page for {}".format(name)
                     print 'Skipping this prof.'
                 overall_rating.append('0.0')
                 dept.append('---')
                 bad_ct += 1
-            else:                 # There is a rating for given prof in this case.
+            else:
+                # There is a rating for given prof in this case.
                 # rmp page I want is third link that contains 'ShowRatings'.
                 br.follow_link(mylinks[2])
                 raw = br.response().read()
@@ -110,24 +123,55 @@ class GetRatingHistory:
 
 
 
-
             # If the overall rating on rmp is 0.0 then there are no ratings at all.
-            # Otherwise look for the rating as a function of year and average for each year.
-            # Only save that average and the year. Maybe also the standard deviation.
+            # Otherwise look for the rating as a function of time.
             if overall_rating[i] != '0.0':
-                print 'Now look for rating as a funciton of time.'
-                pdb.set_trace()
-                for link in br.links():
-                    if 'ShowRatings' in str(link) and "text='Load More'" in str(link):
-                        mylink = link
+                if self.verbose:
+                    print 'Now look for rating as a funciton of time...'
 
-                # Keep loading the 'Load More' link until it's fully loaded.
-                br.follow_link(mylink)
-                while 'ShowRatings' in str(mylink) and "text='Load More'" in str(mylink):
-                    br.follow_link(mylink)
-
-                print 'this is wrong. I need a while loop enclosing whole thing.'
+                # First the current site needs to be fully loaded.
+                try_again = True
+                session = requests.Session() ##
+                load_more_link = br.links().next().base_url + '#'
+                response = session.get(load_more_link)
+                page = BeautifulSoup(response.content)
+                print page
                 pdb.set_trace()
+                while try_again:
+                    for link in br.links():
+                        if 'More' in link.text:
+                            mylinks.append(link)
+                            try_again = True
+                            continue
+
+                            lct += 1
+                            raw = br.response().read()
+                            soup = BeautifulSoup(raw)
+                            tree = html.fromstring(raw)
+                            #print soup
+                            #print '===================================================='
+                            comments=tree.xpath('//p[@class="commentsParagraph"]/text()')
+                            print len(comments)
+                            pdb.set_trace()
+                            br.follow_link(link)
+                            print 'Loading more ({})'.format(lct)
+                        else:
+                            try_again = False
+                linknum = 1
+                raw = br.response().read()
+                soup = BeautifulSoup(raw)
+                tree = html.fromstring(raw)
+                comments=tree.xpath('//p[@class="commentsParagraph"]/text()')
+                print len(comments)
+                pdb.set_trace()
+                # Now scrape the fully loaded site for rating/year/comments(?)
+                raw = br.response().read()
+                soup = BeautifulSoup(raw)
+                tree = html.fromstring(raw)
+
+                #print soup
+                pdb.set_trace()
+
 
             i+=1
 #pdb.set_trace()

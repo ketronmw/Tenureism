@@ -3,11 +3,11 @@ import pdb
 
 from datetime import datetime
 
-import db_tables
+import db_info
 from make_sql_tables import MakeSQLTables
 from get_rating_history import GetRatingHistory
 from get_publication_history import GetPublicationHistory
-from predict_campus import PredictCampus
+# from predict_campus import PredictCampus # Just put this code in the Tenureism class?
 
 class Tenureism:
 
@@ -59,19 +59,27 @@ class Tenureism:
         self.user= user
         self.password = password
         self.verbose = verbose
+        self.year = year
 
         now = datetime.now()
-        if now.month >= 8:
-            # If it is August or later, the next academic year is this year + 1.
-            self.year = now.year + 1
+        # No input from user.
+        if not self.year:
+            if now.month >= 8:
+                # If it is August or later, the next academic year is this year + 1.
+                self.year = now.year + 1
+            else:
+                # If it is pre-August, the next academic year is this year.
+                self.year = now.year
+
         else:
-            # If it is pre-August, the next academic year is this year.
-            self.year = now.year
+            # Input from user.
+            if self.year < now.year:
+                raise ValueError('Input year should not be in the past.')
 
         # 1) Download the csv files & make initial SQL tables.
         sql_table0 = (MakeSQLTables(user=self.user, password=self.password,
                                     verbose=self.verbose))
-        sql_tables0.make_tables()
+        sql_table0.make_tables()
 
         # 2) Scrape ratemyprofessors.com
         ratings = (GetRatingHistory(user=self.user, password=self.password,
@@ -91,4 +99,6 @@ class Tenureism:
         the predictive function on this dataset.
         """
 
-
+        predictions = (PredictCampus(user=self.user, password=self.password,
+                                    verbose=self.verbose))
+        predictions

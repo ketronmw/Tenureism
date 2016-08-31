@@ -8,7 +8,6 @@ except:
 
 import db_info
 
-
 class MakeSQLTables:
 
     """ This script generates MySQL tables from the 10 different .csv files
@@ -23,18 +22,20 @@ class MakeSQLTables:
     nothing.
     """
 
-    def __init__(self, user='root', password='password', verbose=False):
+    def __init__(self, user='root', password='password', verbose=False, force=False):
         self.user = user
         self.password = password
         self.verbose = verbose
+        self.force = force
 
     def make_tables(self):
         # First the data need to be downloaded to .data/ directory.
         # If the .data directory exists, I assume you have already downloaded
         # the necessary dataset and make the MySQL tables. 
 
-        if not os.path.exists('.data/'):
-            os.makedirs('.data/')
+        if not os.path.exists('.data/') or self.force:
+            if not os.path.exists('.data/'):
+                os.makedirs('.data/')
 
             myurl = 'http://herschel.uci.edu/ketron/tenureism_data/'
             print 'Downloading data from ' + myurl
@@ -114,7 +115,7 @@ class MakeSQLTables:
 
             # Do the inverse of above -- keep where profs < N occurances.
             for n in db_info.N:
-                cmd = ('CREATE TABLE profs_list_over'+str(n)+' AS SELECT '+
+                cmd = ('CREATE TABLE profs_list_under'+str(n)+' AS SELECT '+
                        'last_name, first_name,campus, COUNT(*) AS occurences '+
                        'FROM ucpay_profs GROUP BY last_name, first_name, '+
                        'campus HAVING COUNT(*)<'+str(n)+';')
