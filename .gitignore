@@ -1,0 +1,6 @@
+*.pyc
+*.~
+sql_stuff
+*.sql
+.data/*
+data/*
