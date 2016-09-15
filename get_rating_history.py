@@ -2,13 +2,13 @@ import os
 import pdb
 import re
 
+import numpy as np
 import mechanize
 import requests
 import json
 import mysql.connector as mysql
 from bs4 import BeautifulSoup
 from lxml import html
-
 
 import db_info
 
@@ -47,11 +47,12 @@ class GetRatingHistory:
         con = mysql.connect(user=self.user, password=self.password)
         prof_list = con.cursor(buffered=True)
 
-
         # Table profs_list in profs DB is list of all professors at
         # UC with duplicates removed.
         prof_list.execute('USE profs')
-        query = "SELECT last_name, first_name FROM " + self.table #+ " WHERE campus='{}'".format(campus)
+        query = "SELECT last_name, first_name, campus FROM " + self.table
+        #+ " WHERE campus='{}'".format(campus)
+
         prof_list.execute(query)
         print 'Using table {}'.format(self.table)
 
@@ -63,7 +64,7 @@ class GetRatingHistory:
         dept = []
         names = []
         i, good_ct, bad_ct = 0, 0, 0
-        for (last_name, first_name) in prof_list:
+        for (last_name, first_name, campus) in prof_list:
             bad_tags = ['**','--']
             cont = False
             for tag in bad_tags:
@@ -78,7 +79,7 @@ class GetRatingHistory:
                 first_name = mid[0]# + mid[1][0]+'.'
             name = self.capitalize(first_name.strip()) +' ' + self.capitalize(last_name.strip())
 
-            name = 'Manoj Kaplinghat'
+            #name = 'Manoj Kaplinghat'
 
             rmp_search = 'https://www.ratemyprofessors.com/search.jsp?query='+name.replace(' ','+')
             br = mechanize.Browser()
@@ -129,51 +130,110 @@ class GetRatingHistory:
                 if self.verbose:
                     print 'Now look for rating as a funciton of time...'
 
-                # First the current site needs to be fully loaded.
-                try_again = True
-                session = requests.Session() ##
-                load_more_link = br.links().next().base_url + '#'
-                response = session.get(load_more_link)
-                page = BeautifulSoup(response.content)
-                print page
-                pdb.set_trace()
-                while try_again:
-                    for link in br.links():
-                        if 'More' in link.text:
-                            mylinks.append(link)
-                            try_again = True
-                            continue
+                # First the current site needs to be fully loaded. UGH.
+                # try_again = True
+                # session = requests.Session() ##
+                # load_more_link = br.links().next().base_url + '#'
+                # response = session.get(load_more_link)
+                # page = BeautifulSoup(response.content)
+                # print page
+                # pdb.set_trace()
+                # while try_again:
+                #     for link in br.links():
+                #         if 'More' in link.text:
+                #             mylinks.append(link)
+                #             try_again = True
+                #             continue
 
-                            lct += 1
-                            raw = br.response().read()
-                            soup = BeautifulSoup(raw)
-                            tree = html.fromstring(raw)
-                            #print soup
-                            #print '===================================================='
-                            comments=tree.xpath('//p[@class="commentsParagraph"]/text()')
-                            print len(comments)
-                            pdb.set_trace()
-                            br.follow_link(link)
-                            print 'Loading more ({})'.format(lct)
-                        else:
-                            try_again = False
+                #             lct += 1
+                #             raw = br.response().read()
+                #             soup = BeautifulSoup(raw)
+                #             tree = html.fromstring(raw)
+                #             #print soup
+                #             #print '===================================================='
+                #             comments=tree.xpath('//p[@class="commentsParagraph"]/text()')
+                #             print len(comments)
+                #             pdb.set_trace()
+                #             br.follow_link(link)
+                #             print 'Loading more ({})'.format(lct)
+                #         else:
+                #             try_again = False
                 linknum = 1
                 raw = br.response().read()
                 soup = BeautifulSoup(raw)
                 tree = html.fromstring(raw)
-                comments=tree.xpath('//p[@class="commentsParagraph"]/text()')
-                print len(comments)
-                pdb.set_trace()
-                # Now scrape the fully loaded site for rating/year/comments(?)
-                raw = br.response().read()
-                soup = BeautifulSoup(raw)
-                tree = html.fromstring(raw)
+                #comments = tree.xpath('//p[@class="commentsParagraph"]/text()')
+                #difficulty = tree.xpath('//span[@class="score inverse good"]/text()')
 
-                #print soup
-                pdb.set_trace()
+                # Scores have different labels ('average', 'poor' etc.), so need
+                # to get rating with associated date with find_next().
+                years_tot, ratings_tot = [], []
+                dates = soup.find_all('div',class_='date')
+                for date in dates:
+                    ratings_tot.append(float(date.find_next(class_='score').text))
+                    years_tot.append(str(date.text.strip()[-4::]))
+ 
+                # For each year just take the average score. Although this
+                # is throwing away data so it could be changed.
+                years, ratings = [], []
+                for year in np.unique(years_tot):
+                    yr_ind = np.where(np.array(years_tot) == year)[0]
+                    avg_rating = np.mean(np.array(ratings_tot)[yr_ind[0]])
+                    ratings.append(avg_rating)
+                    years.append(year)
 
+                # Now we have ratings as a function of year. These, along with
+                # department + prof name should be saved to a new SQL table!
+                if self.verbose and i == 0:
+                    print ("Generating new SQL table with ratings + department,"
+                           "called profs_ratings_dept")
+
+                # New table command.
+                if i == 0:
+                    # Open a new MySQL connection. 
+                    con2 = mysql.connect(user=self.user, password=self.password)
+                    sql_buff = con2.cursor(buffered=True)
+                    sql_buff.execute('USE profs')
+
+                    cmd = ('CREATE TABLE profs_ratings_dept (year INT, '
+                           'campus VARCHAR(15), name VARCHAR(90), avg_rating FLOAT,'
+                           'dept VARCHAR(50))')
+                    try:
+                        sql_buff.execute(cmd)
+                    except:
+                        print 'Dropping ratings DB.'
+                        sql_buff.execute('DROP TABLE profs_ratings_dept;')
+                        sql_buff.execute(cmd)
+
+                # Insert data for each year into table. Each year = 1 row.
+                for year, rating in zip(years, ratings):
+                    # data_cmd = ("""INSERT INTO profs_ratings_dept (
+                    #             YEAR, CAMPUS, NAME, AVG_RATING, DEPT)
+                    #              VALUES ('+
+                    #             {}, '{}', '{}', {}, '{}');""".format(year,
+                    #                                           str(campus).lower(),
+                    #                                           str(name),
+                    #                                           rating,
+                    #                                           the_dept))
+                    data_cmd = ("""INSERT INTO profs_ratings_dept
+                                 VALUES ({}, '{}', '{}', {}, '{}');""".format(year,
+                                                              str(campus).lower().replace(' ','_'),
+                                                              str(name),
+                                                              rating,
+                                                              the_dept))
+                    try:
+                        sql_buff.execute(data_cmd)
+                        con2.commit()
+                    except mysql.Error as err:
+                        con2.rollback()
+                        print 'There was an error with this command (i={}) {}:'.format(i, data_cmd)
+                        print 'Error: {}'.format(err)
 
             i+=1
-#pdb.set_trace()
-#dict = {'last_name':last_name, 'first_name'}
+            print i
 
+        sql_buff.close()
+        prof_list.close()
+        con.close()
+        con2.close()
+        return
