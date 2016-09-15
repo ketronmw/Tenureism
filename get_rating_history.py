@@ -79,8 +79,6 @@ class GetRatingHistory:
                 first_name = mid[0]# + mid[1][0]+'.'
             name = self.capitalize(first_name.strip()) +' ' + self.capitalize(last_name.strip())
 
-            #name = 'Manoj Kaplinghat'
-
             rmp_search = 'https://www.ratemyprofessors.com/search.jsp?query='+name.replace(' ','+')
             br = mechanize.Browser()
             br.set_handle_robots(False) # ignore robots
