@@ -207,14 +207,6 @@ class GetRatingHistory:
 
                 # Insert data for each year into table. Each year = 1 row.
                 for year, rating in zip(years, ratings):
-                    # data_cmd = ("""INSERT INTO profs_ratings_dept (
-                    #             YEAR, CAMPUS, NAME, AVG_RATING, DEPT)
-                    #              VALUES ('+
-                    #             {}, '{}', '{}', {}, '{}');""".format(year,
-                    #                                           str(campus).lower(),
-                    #                                           str(name),
-                    #                                           rating,
-                    #                                           the_dept))
                     data_cmd = ("""INSERT INTO profs_ratings_dept
                                  VALUES ({}, '{}', '{}', {}, '{}');""".format(year,
                                                               str(campus).lower().replace(' ','_'),
