@@ -79,6 +79,7 @@ class GetRatingHistory:
                 first_name = mid[0]# + mid[1][0]+'.'
             name = self.capitalize(first_name.strip()) +' ' + self.capitalize(last_name.strip())
 
+
             rmp_search = 'https://www.ratemyprofessors.com/search.jsp?query='+name.replace(' ','+')
             br = mechanize.Browser()
             br.set_handle_robots(False) # ignore robots
@@ -119,7 +120,6 @@ class GetRatingHistory:
                 good_ct += 1
                 #if self.verbose:
                 #    print 'Found ratings for prof: {}'.format(name)
-
 
 
             # If the overall rating on rmp is 0.0 then there are no ratings at all.
@@ -199,14 +199,15 @@ class GetRatingHistory:
                     try:
                         sql_buff.execute(cmd)
                     except:
-                        print 'Dropping ratings DB.'
-                        sql_buff.execute('DROP TABLE profs_ratings_dept;')
-                        sql_buff.execute(cmd)
+                        print 'Table "{}"already exitsts, appending...'.format(self.table)
+                        #print 'Dropping ratings DB.'
+                        #sql_buff.execute('DROP TABLE profs_ratings_dept;')
+                        #sql_buff.execute(cmd)
 
                 # Insert data for each year into table. Each year = 1 row.
                 for year, rating in zip(years, ratings):
                     data_cmd = ("""INSERT INTO profs_ratings_dept
-                                 VALUES ({}, '{}', '{}', {}, '{}');""".format(year,
+                                 VALUES ({}, "{}", "{}", {}, "{}");""".format(year,
                                                               str(campus).lower().replace(' ','_'),
                                                               str(name),
                                                               rating,
