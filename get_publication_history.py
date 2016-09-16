@@ -1,5 +1,6 @@
 import os
 import pdb
+import sys
 
 import numpy as np
 import mysql.connector as mysql
@@ -10,9 +11,6 @@ try:
 except:
     raise ImportError('Download scholar.py from '
                       'https://github.com/ckreibich/scholar.py')
-
-
-
 
 class GetPublicationHistory:
 
@@ -61,7 +59,7 @@ class GetPublicationHistory:
         try:
             sql_.execute("select * from profs_pub order by name desc limit 1;")
             last_line = sql_.fetchall()
-            last_entry = str(last_line).split(',')[2].replace('u','').strip().replace("'",'') #yuck
+            last_entry = str(last_line).split(',')[2].replace(" u'",'').strip().replace("'",'') #yuck
         except:
             last_entry = None
         con_init.close()
@@ -119,15 +117,14 @@ class GetPublicationHistory:
 
                 try:
                     citations = np.array(citations, dtype=int)
+                    years = np.array(years, dtype=int)
                 except:
                     citations = np.zeros(len(years))
-                years = np.array(years, dtype=int)
+                    years = np.zeros(len(years))
+
 
                 # Remove year duplicates (= number of publications per year!)
                 # and add up all citations per year.
-                # n_pubs = np.zeros(len(np.unique(years)))
-                # years_unq = n_pubs.copy()
-                # citations_per_year = n_pubs.copy()
                 n_pubs, years_unq, citations_per_year = [],[],[]
                 for iyr, year in enumerate(np.unique(years)):
                     yr_ind = np.where(years == year)[0]
@@ -182,11 +179,14 @@ class GetPublicationHistory:
                     'There are no results for {} with phrase={}'.format(str(name), str(dept))
                 null_list_ct += 1
 
-            if null_list_ct > 10:
-                print "Google has probably blocked your IP."
-                print 'Try search with {}'.format(str(name))
-                pdb.set_trace()
+            if null_list_ct > 1:
+                print "Google has blocked your IP address."
+                #print 'Try search with {}, for example.'.format(str(name))
+                sys.exit(1)
 
             i += 1
             print i
+
+        pdb.set_trace()
+        con2.close(); sql_buff.close()
         return None
