@@ -1,13 +1,15 @@
 import os
 import pdb
 import sys
+import time
+import random
 
 import numpy as np
 import mysql.connector as mysql
 
 import db_info
 try:
-    import scholar as scholar
+    import scholar
 except:
     raise ImportError('Download scholar.py from '
                       'https://github.com/ckreibich/scholar.py')
@@ -81,6 +83,11 @@ class GetPublicationHistory:
             querier = scholar.ScholarQuerier()
             settings = scholar.ScholarSettings()
             query = scholar.SearchScholarQuery()
+
+            # # Wait a little bit.
+            # wait_time = random.uniform(5, 15) 
+            # print 'Waiting {} seconds...'.format(wait_time)
+            # time.sleep(wait_time)
 
             query.set_author(str(name))
             query.set_phrase(str(dept))
@@ -187,6 +194,6 @@ class GetPublicationHistory:
             i += 1
             print i
 
-        pdb.set_trace()
-        con2.close(); sql_buff.close()
+        #pdb.set_trace()
+        #con2.close(); sql_buff.close()
         return None
