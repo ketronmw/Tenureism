@@ -122,10 +122,8 @@ class GetRatingHistory:
                 #if self.verbose:
                 #    print 'Found ratings for prof: {}'.format(name)
 
-
-            # If the overall rating on rmp is 0.0 then there are no ratings at all.
-            # Otherwise look for the rating as a function of time.
-            if overall_rating[i] != '0.0':
+                # If the overall rating on rmp is 0.0 then there are no ratings at all.
+                # Otherwise look for the rating as a function of time.
 
                 # HTML parsing.
                 # Here we scrape the first page before the "load more" button is clicked.
@@ -222,9 +220,6 @@ class GetRatingHistory:
                         con2.rollback()
                         print 'There was an error with this command (i={}) {}:'.format(i, data_cmd)
                         print 'Error: {}'.format(err)
-
-
-
 
             i+=1
             print i
