@@ -4,3 +4,4 @@ sql_stuff
 *.sql
 .data/*
 data/*
+get_rating_history20.py
