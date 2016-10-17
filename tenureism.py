@@ -7,7 +7,7 @@ import db_info
 from make_sql_tables import MakeSQLTables
 from get_rating_history import GetRatingHistory
 from get_publication_history import GetPublicationHistory
-# from predict_campus import PredictCampus # Just put this code in the Tenureism class?
+from predict_campus import PredictCampus
 
 class Tenureism:
 
@@ -51,6 +51,7 @@ class Tenureism:
     def __init__(self, campus='irvine', dept='physics', year=None, user='root',
                  password='password', tables_exist=False, verbose=True):
 
+        campus = campus.lower().replace(' ','_')
         if campus.lower() not in db_info.campus_names:
             print 'You have to choose from one of the existing campuses:'
             raise TypeError(db_info.campus_names)
@@ -76,29 +77,34 @@ class Tenureism:
             if self.year < now.year:
                 raise ValueError('Input year should not be in the past.')
 
+
+        # Start the generation of the final table:
+
         # 1) Download the csv files & make initial SQL tables.
         sql_table0 = (MakeSQLTables(user=self.user, password=self.password,
                                     verbose=self.verbose))
         sql_table0.make_tables()
+
 
         # 2) Scrape ratemyprofessors.com
         ratings = (GetRatingHistory(user=self.user, password=self.password,
                                     verbose=self.verbose))
         ratings.get_history()
 
-        # 3) Scrape google scholar
+
+        # 3) Scrape google scholar.
+        # Google is flagging me as a bot -- skip this for now.
         #pub = (GetPubHistory(user=self.user, password=self.password,
         #                     verbose=self.verbose))
         #pub.get_history()
 
+
         # All the Tables should now be set up and we can make predictions.
+        if self.verbose:
+            print 'Table generation complete.'
 
-    def predict(self):
 
-        """ All of the data tables should be set up now. Just call
-        the predictive function on this dataset.
-        """
-
+        # 4) Make some predictions.
         predictions = (PredictCampus(user=self.user, password=self.password,
-                                    verbose=self.verbose))
-        predictions
+                                     verbose=self.verbose, campus=self.campus))
+        predictions.predict()

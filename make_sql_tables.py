@@ -134,4 +134,4 @@ class MakeSQLTables:
                 print ('Not downloading data or generating MySQL tables -- '+
                        '.data/ dir already exists.')
 
-        return True
+        return None
