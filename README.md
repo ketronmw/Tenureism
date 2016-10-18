@@ -8,10 +8,12 @@ These data go back to 2004. Salaries are also included in this dataset.
 
 With this larger data base, one can make predictions about how the department will more or less function in the coming academic year, in terms of publications and ostensible "lecture quality" from ratemyprofessors.
 
-This first generates the databases. This will download 7.5M from 'http://herschel.uci.edu/ketron/tenureism_data/' to $cwd/.data/ directory. MySQL needs to be installed. With user=root and password=password, you can see productivity of the chemistry department at UCSD:
+The first step generates the databases. This will download 7.5M from 'http://herschel.uci.edu/ketron/tenureism_data/' to $cwd/.data/ directory. MySQL needs to be installed. The default login is user=root and password=password.
+
+At the moment this only compares cumulative mean ratings between departments. Google is flagging get_publication_history.py as a bot. You can compare the ratings of a single department across all the UC campuses as:
 
 ```
 >>> from tenureism import Tenureism()
->>> san_diego = Tenureism(campus='san diego', dept='chemistry')
+>>> chem = Tenureism('chemistry')
 ```
 
