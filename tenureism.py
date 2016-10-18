@@ -34,7 +34,7 @@ class Tenureism:
             is None and the code will return results for entire campus).
     year -- choose some year in the future. If none is input, the default
             is to choose the next academic year.
-    verbose -- print messages throughout (default True).
+    verbose -- print messages throughout (default False).
 
 
     Usage:
@@ -48,13 +48,17 @@ class Tenureism:
     sb.predict()
     """
 
-    def __init__(self, campus='irvine', dept='physics', year=None, user='root',
-                 password='password', tables_exist=False, verbose=True):
+    def __init__(self, dept, campus='irvine', year=None, user='root',
+                 password='password', tables_exist=False, verbose=False):
+
+        if dept is None:
+            raise TypeError('You need to choose a department!')
 
         campus = campus.lower().replace(' ','_')
         if campus.lower() not in db_info.campus_names:
             print 'You have to choose from one of the existing campuses:'
             raise TypeError(db_info.campus_names)
+
         self.campus = campus.lower()
         self.dept = dept.lower()
         self.user= user
@@ -73,7 +77,6 @@ class Tenureism:
 
 
         # Start the generation of the final table:
-
         # 1) Download the csv files & make initial SQL tables.
         sql_table0 = (MakeSQLTables(user=self.user, password=self.password,
                                     verbose=self.verbose))
@@ -96,7 +99,7 @@ class Tenureism:
         # 4) Make some predictions.
         predictions = (PredictCampus(user=self.user, password=self.password,
                                      verbose=self.verbose, campus=self.campus,
-                                     year=self.year))
+                                     year=self.year, dept=self.dept))
         predictions.predict()
 
 

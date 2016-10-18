@@ -6,6 +6,8 @@ import numpy as np
 import mysql.connector as mysql
 from sklearn import linear_model
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+from matplotlib.collections import PatchCollection
 
 import db_info
 
@@ -22,6 +24,7 @@ class PredictCampus:
         self.verbose = verbose
         self.campus = campus
         self.dept = dept
+        self.year = year
 
 
     def reformat_data(self):
@@ -149,15 +152,13 @@ class PredictCampus:
                 diff = ytest - y_predict
                 err = np.dot(diff, diff) / len(diff)
 
-                # Now make a prediction for upcoming year and assume errors are similar.
-                future.append(lin.predict(np.array(2017).reshape(1,-1)))
-                future_err(err)
 
                 # Show results for each dept.
                 if ict == 0:
                     plt.figure()
+                    plt.clf()
                     plt.ion()
-                    plt.ylabel('Cumulative Ratings', fontsize=15)
+                    plt.ylabel('Cumulative Mean Rating', fontsize=15)
                     plt.xlabel('Year', fontsize=15)
                     plt.ylim([5,70])
                     plt.yscale('log')
@@ -166,15 +167,40 @@ class PredictCampus:
 
                 col = cmap(ict/float(nsteps))
                 cols.append(col)
-                plt.scatter(xtrain, ytrain, color=col, alpha=0.5)
+                plt.scatter(xtrain, ytrain, color=col)#, alpha=0.5)
                 plt.plot(xtest, y_predict, color=col, linewidth=2, label=campus)
                 plt.fill_between(xtest, y_predict-err, y_predict+err, color=col, alpha=.1)
                 ict += 1
 
 
+                # Now make a prediction for upcoming year and assume errors are similar.
+                # Don't plot yet.
+                next_year = lin.predict(np.array(self.year).reshape(1,-1))[0]
+                future.append(next_year)
+                future_err.append(err)
+
         plt.legend(campus_names, loc=4)
         plt.show()
-        pdb.set_trace()
 
+
+        # Second plot is to show the future predictions compared with each campus.
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        y = range(len(future))[::-1] # Start first campus at the top
+        for i, (f, fe) in enumerate(zip(future, future_err)):
+            xy = (f, y[i])
+            wid = fe
+            hei = 0.5
+            ax.add_patch(mpatches.FancyBboxPatch(
+                xy, wid, hei,label=campus_names[i],
+                boxstyle=mpatches.BoxStyle("Round", pad=0.02), facecolor=cols[i]))
+            #plt.plot([f,f], [y[i]-.25,y[i]+.25],color='black',linewidth=3)
+        plt.title('Predicted ratings for {} in {}'.format(self.dept, self.year), fontsize=18)
+        plt.ylim([-1,10])
+        plt.xlim([np.min(future)-np.max(future_err)-5, np.max(future)+np.max(future_err)])
+        plt.legend(campus_names,loc=2)
+        plt.xlabel('Cumulative Mean Rating', fontsize=15)
+        plt.gca().yaxis.set_major_locator(plt.NullLocator()) # turn off y-ticks
+        plt.show()
 
         return None

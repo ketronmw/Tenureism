@@ -56,7 +56,8 @@ class GetRatingHistory:
         #+ " WHERE campus='{}'".format(campus)
 
         prof_list.execute(query)
-        print 'Using table {} '.format(self.table)
+        if self.verbose:
+            print 'Using table {} '.format(self.table)
 
 
         # Now we have a [unique] list of all the professor names from all the campuses.
@@ -194,7 +195,8 @@ class GetRatingHistory:
                     try:
                         sql_buff.execute(cmd)
                     except:
-                        print 'Table "{}" already exitsts, NOT appending...'.format(self.newtable)
+                        if self.verbose:
+                            print 'Table "{}" already exitsts, NOT appending...'.format(self.newtable)
                         return None
                         #print 'Dropping ratings DB.'
                         #sql_buff.execute('DROP TABLE {};'.format(self.newtable))
