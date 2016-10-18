@@ -63,18 +63,12 @@ class Tenureism:
         self.year = year
 
         now = datetime.now()
-        # No input from user.
         if not self.year:
-            if now.month >= 8:
-                # If it is August or later, the next academic year is this year + 1.
-                self.year = now.year + 1
-            else:
-                # If it is pre-August, the next academic year is this year.
-                self.year = now.year
-
+            # No input from user.
+            self.year = now.year + 1
         else:
             # Input from user.
-            if self.year < now.year:
+            if self.year <= now.year:
                 raise ValueError('Input year should not be in the past.')
 
 
@@ -99,12 +93,11 @@ class Tenureism:
         #pub.get_history()
 
 
-        # All the Tables should now be set up and we can make predictions.
-        if self.verbose:
-            print 'Table generation complete.'
-
-
         # 4) Make some predictions.
         predictions = (PredictCampus(user=self.user, password=self.password,
-                                     verbose=self.verbose, campus=self.campus))
+                                     verbose=self.verbose, campus=self.campus,
+                                     year=self.year))
         predictions.predict()
+
+
+        return None
