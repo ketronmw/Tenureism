@@ -9,7 +9,7 @@ import json
 import mysql.connector as mysql
 from bs4 import BeautifulSoup
 from lxml import html
-from pprint import pprint 
+from pprint import pprint
 
 import db_info
 
@@ -74,16 +74,19 @@ class GetRatingHistory:
                 if tag in first_name or tag in last_name:
                     cont=True
             if cont:
-                continue # Skip entries with no data. There are a few of these in the table.
+                continue # Skip entries with no data. There are a few of
+                         # these in the table.
 
             # If the middle name is more than an initial, remove it.
             mid = first_name.strip().split(' ')
             if len(mid) > 1:
                 first_name = mid[0]# + mid[1][0]+'.'
-            name = self.capitalize(first_name.strip()) +' ' + self.capitalize(last_name.strip())
+            name = (self.capitalize(first_name.strip()) +' ' +
+                    self.capitalize(last_name.strip()))
 
 
-            rmp_search = 'https://www.ratemyprofessors.com/search.jsp?query='+name.replace(' ','+')
+            rmp_search = ('https://www.ratemyprofessors.com/search.jsp?query='+
+                          name.replace(' ','+')
             br = mechanize.Browser()
             br.set_handle_robots(False) # ignore robots
             br.open(rmp_search)
@@ -126,7 +129,7 @@ class GetRatingHistory:
                 # HTML parsing.
                 # Here we scrape the first page before the "load more" button is clicked.
                 # In order to click that button we have to execute some javascript, of
-                # which the output is different. 
+                # which the output is different.
                 linknum = 1
                 raw = br.response().read()
                 soup = BeautifulSoup(raw)
@@ -184,7 +187,7 @@ class GetRatingHistory:
                            "called {}".format(self.newtable))
                 # New table command.
                 if i == 0:
-                    # Open a new MySQL connection. 
+                    # Open a new MySQL connection.
                     con2 = mysql.connect(user=self.user, password=self.password)
                     sql_buff = con2.cursor(buffered=True)
                     sql_buff.execute('USE profs')
@@ -207,7 +210,7 @@ class GetRatingHistory:
                     data_cmd = ("""INSERT INTO {}
                                  VALUES ({}, "{}", "{}",
                                  {}, "{}");""".format(self.newtable,
-                                                      year, 
+                                                      year,
                                                       str(campus).lower().replace(' ','_'),
                                                       str(name),
                                                       rating,

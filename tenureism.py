@@ -20,7 +20,7 @@ class Tenureism:
     2) Scrape ratemyprofessors.com with get_rating_history.py for
        every professor employed at the UC. This takes a while -- there
        are around 20k unique names in this dataset.
-    3) Scrape *google scholar* to get publication history. Also
+    3) Scrape google scholar to get publication history. Also
        takes a while. Both ratings and pub history data are saved
        as SQL tables and only need to be run once.
     4) Make some predictions about some inputted academic year.
@@ -38,14 +38,9 @@ class Tenureism:
 
 
     Usage:
-    # For Chemistry at San Diego:
+    # To compare biology between campuses for 2017:
     from tenureism import Tenureism
-    next_year = Tenureism(campus='san_diego', dept='chemistry', year=2016)
-    next_year.predict()
-
-    # For the entire santa barbara campus in 2017:
-    sb = Tenureism(campus='santa_barbara', year=2017)
-    sb.predict()
+    next_year = Tenureism('biology')
     """
 
     def __init__(self, dept, campus='irvine', year=None, user='root',
@@ -87,11 +82,11 @@ class Tenureism:
         ratings = (GetRatingHistory(user=self.user, password=self.password,
                                     verbose=self.verbose))
         ratings.get_history()
-
+ 
 
         # 3) Scrape google scholar.
         # Google is flagging me as a bot -- skip this for now.
-        #pub = (GetPubHistory(user=self.user, password=self.password,
+        #pub = (GetPublicationHistory(user=self.user, password=self.password,
         #                     verbose=self.verbose))
         #pub.get_history()
 

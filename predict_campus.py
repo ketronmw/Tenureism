@@ -78,12 +78,12 @@ class PredictCampus:
                     var_tmp.append(np.std(ratings[this_yr_dept_ind]))
                     years_tmp.append(year)
 
-                if len(ratings_tmp) == 0: 
+                if len(ratings_tmp) == 0:
                     continue # nothing to save
 
 
                 # This will be the main data structure. For now I'll do
-                # regression for every department. 
+                # regression for every department.
                 years_tmp = np.array(years_tmp)
                 var_tmp = np.array(var_tmp)
                 ratings_tmp = np.array(ratings_tmp)
@@ -155,21 +155,25 @@ class PredictCampus:
 
                 # Show results for each dept.
                 if ict == 0:
-                    plt.figure()
-                    plt.clf()
+                    fig = plt.figure()
+                    plt1 = fig.add_subplot(111)
                     plt.ion()
-                    plt.ylabel('Cumulative Mean Rating', fontsize=15)
-                    plt.xlabel('Year', fontsize=15)
-                    plt.ylim([5,70])
-                    plt.yscale('log')
+                    plt1.set_ylabel('Cumulative Mean Rating', fontsize=15)
+                    plt1.set_xlabel('Year', fontsize=15)
+                    plt1.set_ylim([5,70])
+                    plt1.set_yscale('log')
                     cmap = plt.cm.rainbow
                     nsteps = len(db_info.campus_names)
 
+                    #plt2 = fig.add_subplot(122)
+                    #plt2.set_yscale('log')
+                    #plt2.set_ylim([20,70])
+
                 col = cmap(ict/float(nsteps))
                 cols.append(col)
-                plt.scatter(xtrain, ytrain, color=col)#, alpha=0.5)
-                plt.plot(xtest, y_predict, color=col, linewidth=2, label=campus)
-                plt.fill_between(xtest, y_predict-err, y_predict+err, color=col, alpha=.1)
+                plt1.scatter(xtrain, ytrain, color=col)#, alpha=0.5)
+                plt1.plot(xtest, y_predict, color=col, linewidth=2, label=campus)
+                plt1.fill_between(xtest, y_predict-err, y_predict+err, color=col, alpha=.1)
                 ict += 1
 
 
@@ -179,7 +183,7 @@ class PredictCampus:
                 future.append(next_year)
                 future_err.append(err)
 
-        plt.legend(campus_names, loc=4)
+        plt1.legend(campus_names, loc=4)
         plt.show()
 
 
@@ -195,10 +199,12 @@ class PredictCampus:
                 xy, wid, hei,label=campus_names[i],
                 boxstyle=mpatches.BoxStyle("Round", pad=0.02), facecolor=cols[i]))
             #plt.plot([f,f], [y[i]-.25,y[i]+.25],color='black',linewidth=3)
+
+        plt.legend(campus_names,loc=2)
         plt.title('Predicted ratings for {} in {}'.format(self.dept, self.year), fontsize=18)
         plt.ylim([-1,10])
-        plt.xlim([np.min(future)-np.max(future_err)-5, np.max(future)+np.max(future_err)])
-        plt.legend(campus_names,loc=2)
+        plt.xlim([np.min(future)-np.max(future_err)-4, np.max(future)+np.max(future_err)])
+
         plt.xlabel('Cumulative Mean Rating', fontsize=15)
         plt.gca().yaxis.set_major_locator(plt.NullLocator()) # turn off y-ticks
         plt.show()
