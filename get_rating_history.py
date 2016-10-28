@@ -85,8 +85,7 @@ class GetRatingHistory:
                     self.capitalize(last_name.strip()))
 
 
-            rmp_search = ('https://www.ratemyprofessors.com/search.jsp?query='+
-                          name.replace(' ','+')
+            rmp_search = ('https://www.ratemyprofessors.com/search.jsp?query='+name.replace(' ','+'))
             br = mechanize.Browser()
             br.set_handle_robots(False) # ignore robots
             br.open(rmp_search)
