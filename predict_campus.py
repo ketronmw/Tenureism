@@ -101,7 +101,7 @@ class PredictCampus:
         return None
 
 
-    def predict(self):
+    def predict(self, do_plot=False):
 
         """ Actually make some predictions from the data, finally.
         If the ratings_data data structure doesn't exits (I pickled it)
