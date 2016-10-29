@@ -141,11 +141,10 @@ def predict_campus():
 
 
 if __name__ == '__main__':
-    app.debug=True
-    app.run()
-#    port=int(os.environ.get("PORT",5000))
-#    if port==5000 :
-#	app.run(port=port,host='0.0.0.0')
-#    else :
-#	app.run(port=port)
+    
+   port=int(os.environ.get("PORT",5000))
+   if port==5000 :
+	app.run(port=port,host='0.0.0.0')
+   else :
+	app.run(port=port)
 
