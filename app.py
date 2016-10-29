@@ -20,6 +20,14 @@ import db_info
 app = Flask(__name__)
 
 @app.route('/')
+def main():
+    return redirect('/index')
+
+@app.route('/index', methods=['GET','POST'])
+def index():
+    return render_template('index.html')
+
+@app.route('/figures',methods=['POST'])
 def predict_campus():
 
     """ Takes a department input from a user and performs
@@ -129,7 +137,7 @@ def predict_campus():
     fig.savefig(f)
     plotPng2 = 'tmp2.png'
 
-    return render_template('figures.html', plotPng=plotPng2, plotPng2=plotPng1)
+    return render_template('figures.html', plotPng1=plotPng2, plotPng2=plotPng1)
 
 
 if __name__ == '__main__':
