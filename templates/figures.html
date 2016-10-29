@@ -1,14 +1,21 @@
+<!doctype html>
 <html>
 <head>
-  <title>Figure examples</title>
-  <link rel="stylesheet" href="http://cdn.pydata.org/bokeh-0.7.1.min.css" type="text/css" />
-  <script type="text/javascript" src="http://cdn.pydata.org/bokeh-0.7.1.min.js"></script>
+ <title>TENUREISM!</title>
+ <link rel="stylesheet" href="http://cdn.pydata.org/bokeh-0.7.1.min.css" type="text/css" />
+ <script type="text/javascript" src="http://cdn.pydata.org/bokeh-0.7.1.min.js"></script>
+ {{ figJS|safe }}
 </head>
-
 <body>
-  
+  <p>
+    
+  </p>
+<div class='matplotlib'>
   <img src="static/{{plotPng1}}">
+  <figcaption>Fig 1. - Better rankings tend towards the right. Widths correspond to relative errors.</figcaption>
   <img src="static/{{plotPng2}}">
-
+  <figcaption>Fig 2. - Linear regression of cumulative rankings for this department. The filled circles are the training set and the lines represent the test set. Errors are shaded regions, which are assumed to be the same for the subsequent year's modeling (Fig 1 above).</figcaption>
+</div>
 </body>
 </html>
+ 

@@ -1,6 +1,6 @@
 import os
-import pdb
 import pickle
+from glob import glob
 
 import tempfile
 import numpy as np
@@ -9,9 +9,6 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.collections import PatchCollection
-from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-from matplotlib.figure import Figure
-from matplotlib.dates import DateFormatter
 from flask import Flask, render_template, request, redirect
 
 import db_info
@@ -27,7 +24,7 @@ def main():
 def index():
     return render_template('index.html')
 
-@app.route('/figures',methods=['POST'])
+@app.route('/figures',methods=['GET','POST'])
 def predict_campus():
 
     """ Takes a department input from a user and performs
@@ -38,7 +35,9 @@ def predict_campus():
     # Load ratings and get dept from user input.
     ratings_data = pickle.load(open('ratings_data.pkl','r'))
     dept = request.form['departmentText'].lower()
-    #dept = 'biology'
+    plots = glob('static/tmp*png')
+    if len(plots) > 0:
+        for pp in plots: os.remove(pp)
 
     # Do some linear regression!
     year = datetime.now().year + 1 # do prediction for next year!
@@ -109,9 +108,14 @@ def predict_campus():
 
 
     plt1.legend(campus_names, loc=4)
-    f = 'static/tmp1.png'
+    #f = 'static/tmp1.png'
+    f = tempfile.NamedTemporaryFile(
+        dir='static/',
+        suffix='.png',delete=False)
     fig.savefig(f)
-    plotPng1 = 'tmp1.png'
+    f.close()
+    plotPng1 = f.name.split('/')[-1]
+    #plotPng1 = 'tmp1.png'
 
 
     # Second plot is to show the future predictions compared with each campus.
@@ -134,17 +138,24 @@ def predict_campus():
     plt.xlabel('Cumulative Mean Rating', fontsize=15)
     plt.gca().yaxis.set_major_locator(plt.NullLocator()) # turn off y-ticks
     f = 'static/tmp2.png'
+    f = tempfile.NamedTemporaryFile(
+        dir='static/',
+        suffix='.png',delete=False)
     fig.savefig(f)
-    plotPng2 = 'tmp2.png'
+    f.close()
+    plotPng2 = f.name.split('/')[-1]
+    #fig.savefig(f)
+    #plotPng2 = 'tmp2.png'
 
     return render_template('figures.html', plotPng1=plotPng2, plotPng2=plotPng1)
+    #return render_template('figures.html', plotPng1=plotPng2, plotPng2=plotPng1)
 
 
 if __name__ == '__main__':
-    app.run(port=33507)
-    # port=int(os.environ.get("PORT",5000))
-    # if port==5000 :
-    #     app.run(port=port,host='0.0.0.0')
-    # else :
-    #     app.run(port=port)
+    #app.run(port=33507)
+    port=int(os.environ.get("PORT",5000))
+    if port==5000:
+        app.run(port=port,host='0.0.0.0')
+    else:
+        app.run(port=port)
 
