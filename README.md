@@ -16,4 +16,4 @@ At the moment this only compares cumulative mean ratings between departments. Go
 >>> from tenureism import Tenureism()
 >>> chem = Tenureism('chemistry')
 ```
-or on Heroku, at http://tenureism.herokuapp.com/index.
+or on Heroku, at http://tenureism.herokuapp.com.
