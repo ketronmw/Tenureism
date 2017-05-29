@@ -13,7 +13,7 @@ The first step generates the databases. This will download 7.5M from 'http://her
 At the moment this only compares cumulative mean ratings between departments. Google is flagging get_publication_history.py as a bot. You can run this locally as 
 
 ```
->>> from tenureism import Tenureism()
+>>> from tenureism import Tenureism
 >>> chem = Tenureism('chemistry')
 ```
 or on Heroku, at http://tenureism.herokuapp.com.
